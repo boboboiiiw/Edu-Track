@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
 import Button from "../Button";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 type LayoutProps = {
   children: ReactNode;
 };
 
 const Layout = ({ children }: LayoutProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Navbar */}
@@ -47,12 +50,14 @@ const Layout = ({ children }: LayoutProps) => {
             </NavLink>
           </nav>
 
-          <Button variant="primary">Login</Button>
+          <Button className={`${location.pathname === '/login' ? "invisible" : ""} `} variant="primary" onClick={() => navigate("/login")}>
+            Login
+          </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow bg-[#FEFAE0] text-[#626F47] container mx-auto">
+      <main className="flex-grow bg-[#FEFAE0] text-[#626F47] w-full flex flex-col items-center justify-center">
         {children}
       </main>
 
