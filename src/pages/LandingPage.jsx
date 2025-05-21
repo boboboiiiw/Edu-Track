@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import Layout from "../components/layout/Layout";
-import ButtonWithIcon from "../components/ButtonWithIcon";
+import Layout from "../assets/components/layout/Layout";
+import ButtonWithIcon from "../assets/components/ButtonWithIcon";
 import { BsRocketTakeoff } from "react-icons/bs";
 import statistics from "../assets/images/statistics.jpg";
 import writing from "../assets/images/writing.jpg";

@@ -1,12 +1,7 @@
-import type { ReactNode } from "react";
 import Button from "../Button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
-type LayoutProps = {
-  children: ReactNode;
-};
-
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 

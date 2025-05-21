@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Layout from "../components/layout/Layout";
+import Layout from "../assets/components/layout/Layout";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -11,7 +11,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {

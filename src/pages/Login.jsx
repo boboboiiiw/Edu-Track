@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Layout from "../components/layout/Layout";
+import Layout from "../assets/components/layout/Layout";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -7,7 +7,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     console.log("Login attempt with", { email, password });
     // TODO: handle real login logic here
