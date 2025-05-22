@@ -8,13 +8,16 @@ import Index from "@/pages/authenticated/Index";
 import PostListPage from "@/pages/authenticated/PostListPage";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import ProfilePage from "./authenticated/ProfilePage";
+import MyPostsPage from "./authenticated/MyPostsPage";
+import RecommendedPostsPage from "./authenticated/RecommendedPostsPage";
+import RedirectToHome from "@/routes/RedirectToHome";
 
 export default function App() {
   return (
     <Layout>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<RedirectToHome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -40,6 +43,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/myposts"
+          element={
+            <ProtectedRoute>
+              <MyPostsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recommended"
+          element={
+            <ProtectedRoute>
+              <RecommendedPostsPage />
             </ProtectedRoute>
           }
         />

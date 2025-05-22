@@ -17,7 +17,7 @@ const Layout = ({ children }) => {
 
           <nav className="space-x-6 text-sm font-medium">
             <NavLink
-              to="/"
+              to={isAuthenticated ? "/home" : "/"}
               className={({ isActive }) =>
                 isActive
                   ? "text-[#FFCF50] font-semibold underline"
@@ -27,31 +27,36 @@ const Layout = ({ children }) => {
               Home
             </NavLink>
             <NavLink
-              to="/about"
+              to="/myposts"
               className={({ isActive }) =>
                 isActive
                   ? "text-[#FFCF50] font-semibold underline"
                   : "text-[#FEFAE0] hover:text-[#FFCF50]"
               }
             >
-              About
+              Postingan Saya
             </NavLink>
             <NavLink
-              to="/contact"
+              to="/recommended"
               className={({ isActive }) =>
                 isActive
                   ? "text-[#FFCF50] font-semibold underline"
                   : "text-[#FEFAE0] hover:text-[#FFCF50]"
               }
             >
-              Contact
+              Terpopuler
             </NavLink>
           </nav>
 
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <span className="text-sm italic text-[#FFCF50]">
-                <a className="hover:cursor-pointer" onClick={() => navigate("/profile")}>{user?.name}</a>
+                <a
+                  className="hover:cursor-pointer"
+                  onClick={() => navigate("/profile")}
+                >
+                  {user?.name}
+                </a>
               </span>
               <Button
                 variant="secondary"
