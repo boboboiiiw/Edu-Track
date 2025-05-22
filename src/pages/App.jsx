@@ -7,6 +7,7 @@ import Register from "@/pages/Register";
 import Index from "@/pages/authenticated/Index";
 import PostListPage from "@/pages/authenticated/PostListPage";
 import ProtectedRoute from "@/routes/ProtectedRoute";
+import ProfilePage from "./authenticated/ProfilePage";
 
 export default function App() {
   return (
@@ -31,6 +32,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <PostListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

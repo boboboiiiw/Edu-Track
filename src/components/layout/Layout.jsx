@@ -51,7 +51,7 @@ const Layout = ({ children }) => {
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <span className="text-sm italic text-[#FFCF50]">
-                {user?.name}
+                <a className="hover:cursor-pointer" onClick={() => navigate("/profile")}>{user?.name}</a>
               </span>
               <Button
                 variant="secondary"
