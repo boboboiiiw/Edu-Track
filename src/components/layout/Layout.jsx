@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/auth-context";
+import { useAuth } from "@/hooks/useAuth";
 
 const Layout = ({ children }) => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -34,7 +34,7 @@ const Layout = ({ children }) => {
                   : "text-[#FEFAE0] hover:text-[#FFCF50]"
               }
             >
-              Postingan Saya
+              Rangkuman Saya
             </NavLink>
             <NavLink
               to="/recommended"
@@ -82,8 +82,8 @@ const Layout = ({ children }) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow w-full bg-[#FEFAE0] text-[#626F47] px-4 py-8">
-        <div className="max-w-6xl mx-auto">{children}</div>
+      <main className="flex-grow w-full bg-[#FEFAE0] text-[#626F47] pt-8">
+        <div className="mx-auto">{children}</div>
       </main>
 
       {/* Footer */}

@@ -1,25 +1,49 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/auth-context";
+import { z } from "zod";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
 const Login = () => {
-  const { login } = useAuth(); // ✅ gunakan context
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { login, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    // 🎭 Simulasi validasi login dummy
-    const mockUser = {
-      name: "Boy",
-      email,
-      role: email.includes("dosen") ? "Dosen" : "Mahasiswa",
-    };
-
-    login(mockUser); // ⬅️ update context dan simpan ke localStorage
-    navigate("/home"); // ⬅️ arahkan ke halaman setelah login
+  const onSubmit = async (values) => {
+    await login(
+      values.email,
+      values.password,
+      () => {
+        toast.success("Login berhasil!");
+        navigate("/home");
+      },
+      (error) => {
+        toast.error(error?.message || "Email atau password salah");
+      }
+    );
   };
 
   return (
@@ -29,50 +53,45 @@ const Login = () => {
           Masuk ke EduTrack
         </h2>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A4B465]"
-              placeholder="kamu@example.com"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="kamu@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A4B465]"
-              placeholder="••••••••"
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <button
-            type="submit"
-            className="w-full bg-[#626F47] text-[#FEFAE0] hover:bg-[#4E5839] font-semibold py-2 rounded-md transition"
-          >
-            Masuk
-          </button>
-        </form>
+            <Button
+              type="submit"
+              className="w-full mt-2"
+              disabled={authLoading}
+            >
+              {authLoading ? "Memuat..." : "Masuk"}
+            </Button>
+          </form>
+        </Form>
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Belum punya akun?{" "}

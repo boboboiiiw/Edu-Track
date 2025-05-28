@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 
-import LandingPage from "@/pages/LandingPage";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Index from "@/pages/authenticated/Index";
@@ -11,6 +10,7 @@ import ProfilePage from "./authenticated/ProfilePage";
 import MyPostsPage from "./authenticated/MyPostsPage";
 import RecommendedPostsPage from "./authenticated/RecommendedPostsPage";
 import RedirectToHome from "@/routes/RedirectToHome";
+import AddPostPage from "./authenticated/AddPost";
 
 export default function App() {
   return (
@@ -20,10 +20,9 @@ export default function App() {
         <Route path="/" element={<RedirectToHome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
         {/* Protected Routes */}
         <Route
-          path="/listPage"
+          path="/posts/:id"
           element={
             <ProtectedRoute>
               <Index />
@@ -59,6 +58,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <RecommendedPostsPage />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/posts/new"
+          element={
+            <ProtectedRoute>
+              <AddPostPage />
             </ProtectedRoute>
           }
         />

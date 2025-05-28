@@ -1,123 +1,86 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import PostCard from "../../assets/components/Postcard";
-import { Button } from "@/components/ui/button"; // pastikan path ini sesuai
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/components/utils/api";
+import { Button } from "@/components/ui/button";
+import PostCard from "@/assets/components/Postcard";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
-const Index = () => {
-  const navigate = useNavigate();
+const PostDetailPage = () => {
+  const { id } = useParams();
+  const [post, setPost] = useState(null);
+  const { user } = useAuth(); // user: { id, name, role }
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const currentRole = "Dosen";
-  const currentUser = "dosen001";
+  // Fetch post
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const data = await apiRequest(`/posts/${id}`);
+        setPost(data);
+      } catch {
+        toast.error("Gagal mengambil post.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "Rangkuman Bab 1: Pendahuluan",
-      content: "Bab ini membahas dasar-dasar penelitian...",
-      references: ["https://example.com/artikel1", "https://linklain.com"],
-      likes: 0,
-      dislikes: 0,
-      recommendedBy: [],
-      author: "Boy",
-      createdAt: "2025-05-20T10:30:00Z",
-    },
-  ]);
+    fetchPost();
+  }, [id]);
 
-  const [comments, setComments] = useState({
-    1: [
-      { text: "Sangat bermanfaat!", authorRole: "Mahasiswa" },
-      {
-        text: "Tolong perjelas bagian metode penelitian.",
-        authorRole: "Dosen",
-      },
-      { text: "Mantap, terima kasih sudah berbagi.", authorRole: "Mahasiswa" },
-      { text: "Referensinya kurang relevan, cek ulang.", authorRole: "Dosen" },
-      {
-        text: "Saya suka penjelasan tentang latar belakang.",
-        authorRole: "Mahasiswa",
-      },
-      { text: "Tolong tambahkan kutipan jurnal.", authorRole: "Dosen" },
-      {
-        text: "Apakah ini sudah disesuaikan dengan format kampus?",
-        authorRole: "Mahasiswa",
-      },
-      { text: "Perlu dikaji ulang struktur kalimatnya.", authorRole: "Dosen" },
-      { text: "Informasinya akurat, good job!", authorRole: "Mahasiswa" },
-      {
-        text: "Coba tambahkan bagian hasil penelitian sebelumnya.",
-        authorRole: "Dosen",
-      },
-      { text: "Topik ini menarik, sangat relevan.", authorRole: "Mahasiswa" },
-    ],
-  });
+  // Fetch comments
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const res = await apiRequest(`/comments/post/${id}`);
+        setComments(res.comments); // ambil hanya bagian komentar
+      } catch {
+        toast.error("Gagal mengambil komentar.");
+      }
+    };
 
-  const handleAddComment = (postId, text) => {
-    const newComment = { text, authorRole: currentRole };
-    setComments((prev) => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), newComment],
-    }));
+    if (id) fetchComments();
+  }, [id]);
+
+  // Tambah komentar baru
+  const handleAddComment = async (postId, content) => {
+    try {
+      const res = await apiRequest("/comments", {
+        method: "POST",
+        body: JSON.stringify({ post_id: postId, content }),
+      });
+
+      setComments((prev) => [...prev, res.comment]);
+      toast.success("Komentar ditambahkan.");
+    } catch {
+      toast.error("Gagal menambahkan komentar.");
+    }
   };
 
-  const handleLike = (postId) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId ? { ...post, likes: post.likes + 1 } : post
-      )
-    );
-  };
+  if (loading) return <p>Memuat...</p>;
+  if (!post) return <p>Post tidak ditemukan.</p>;
 
-  const handleDislike = (postId) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId ? { ...post, dislikes: post.dislikes + 1 } : post
-      )
-    );
-  };
-
-  const handleToggleRecommend = (postId) => {
-    if (currentRole !== "Dosen") return;
-
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        const alreadyRecommended = post.recommendedBy.includes(currentUser);
-
-        return {
-          ...post,
-          recommendedBy: alreadyRecommended
-            ? post.recommendedBy.filter((id) => id !== currentUser)
-            : [...post.recommendedBy, currentUser],
-        };
-      })
-    );
-  };
+  console.log(user?.role);
+  console.log(user?.id);
 
   return (
     <div className="max-w-2xl mx-auto mt-10 px-4">
-      {/* Tombol Kembali */}
       <div className="mb-6">
-        <Button variant="outline" onClick={() => navigate(-1)}>
+        <Button variant="outline" onClick={() => window.history.back()}>
           ⬅️ Kembali
         </Button>
       </div>
 
-      {/* Daftar Post */}
-      {posts.map((post) => (
-        <PostCard
-          key={post.id}
-          post={post}
-          comments={comments[post.id] || []}
-          onAddComment={handleAddComment}
-          onLike={handleLike}
-          onDislike={handleDislike}
-          onToggleRecommend={handleToggleRecommend}
-          currentRole={currentRole}
-          currentUser={currentUser}
-        />
-      ))}
+      <PostCard
+        post={post}
+        comments={comments}
+        onAddComment={handleAddComment}
+        currentRole={user?.role}
+        currentUser={user?.name}
+      />
     </div>
   );
 };
 
-export default Index;
+export default PostDetailPage;

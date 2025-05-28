@@ -1,83 +1,135 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { apiRequest } from "@/components/utils/api";
+import { toast } from "sonner";
 
-const COMMENTS_PER_PAGE = 3;
-
-const CommentSection = ({ comments, onAddComment, postId }) => {
-  const [newComment, setNewComment] = useState("");
+const CommentSection = ({ postId }) => {
+  const [input, setInput] = useState("");
+  const [comments, setComments] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
 
-  const totalPages = Math.ceil(comments.length / COMMENTS_PER_PAGE);
+  const fetchComments = async (page = 1) => {
+    setLoading(true);
+    try {
+      const data = await apiRequest(`/comments/post/${postId}?page=${page}`);
+      setComments(data.comments);
+      setPagination(data.pagination);
+    } catch (err) {
+      console.error("Gagal memuat komentar:", err);
+      toast.error("Gagal memuat komentar.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const paginatedComments = comments.slice(
-    (page - 1) * COMMENTS_PER_PAGE,
-    page * COMMENTS_PER_PAGE
-  );
+  useEffect(() => {
+    fetchComments(page);
+  }, [page, postId]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (newComment.trim() === "") return;
-
-    onAddComment(postId, newComment);
-    setNewComment("");
-    setPage(1); // Reset ke halaman pertama saat komentar baru ditambahkan
+  const handleSubmit = async () => {
+    if (!input.trim()) return;
+    try {
+      await apiRequest("/comments", {
+        method: "POST",
+        body: JSON.stringify({
+          post_id: postId,
+          content: input,
+        }),
+      });
+      toast.success("Komentar berhasil dikirim.");
+      setInput("");
+      fetchComments(page); // refresh komentar di halaman yang sama
+    } catch {
+      toast.error("Gagal menambahkan komentar.");
+    }
   };
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold mb-2">Komentar:</h3>
+    <div className="space-y-5 mt-6">
+      <h4 className="text-sm font-semibold text-gray-800">💬 Komentar</h4>
 
-      <ul className="space-y-2 mb-4">
-        {paginatedComments.map((comment, idx) => (
-          <li
-            key={idx}
-            className="border border-gray-200 rounded-xl bg-gray-50 px-4 py-2 text-sm text-gray-700"
-          >
-            <strong className="text-gray-900">{comment.authorRole}:</strong>{" "}
-            {comment.text}
-          </li>
-        ))}
-      </ul>
+      {/* Daftar komentar */}
+      <div className="space-y-3">
+        {loading ? (
+          <p className="text-sm text-gray-500">Memuat komentar...</p>
+        ) : comments.length === 0 ? (
+          <p className="text-sm text-gray-500 italic">Belum ada komentar.</p>
+        ) : (
+          comments.map((c) => (
+            <Card key={c.id} className="bg-gray-50 border rounded-md">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium text-gray-800">
+                    {c.username}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(c.created_at).toLocaleString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-700">{c.content}</p>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
-      {totalPages > 1 && (
-        <div className="flex justify-between items-center mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            disabled={page === 1}
-          >
-            ⬅️ Sebelumnya
-          </Button>
-          <span className="text-sm text-gray-500">
-            Halaman {page} dari {totalPages}
+      {/* Navigasi Pagination */}
+      {pagination && (
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <span>
+            Halaman {pagination.current_page} dari {pagination.total_pages}
           </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={page === totalPages}
-          >
-            Selanjutnya ➡️
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!pagination.has_prev || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              ⬅ Sebelumnya
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!pagination.has_next || loading}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Berikutnya ➡
+            </Button>
+          </div>
         </div>
       )}
 
-      <Separator className="my-4" />
+      <Separator />
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Tulis komentar..."
-          className="flex-1 border rounded-lg px-3 py-2 text-sm"
+      {/* Form komentar baru */}
+      <div className="space-y-2">
+        <h5 className="text-sm font-medium text-gray-700">
+          Tambahkan Komentar
+        </h5>
+        <Textarea
+          placeholder="Tulis komentar Anda..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="min-h-[80px]"
         />
-        <Button type="submit" className="text-sm">
-          Kirim
-        </Button>
-      </form>
+        <div className="flex justify-end">
+          <Button size="sm" onClick={handleSubmit} disabled={loading}>
+            Kirim
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

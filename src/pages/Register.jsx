@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,24 +9,44 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Menggunakan loading dari state lokal
   const navigate = useNavigate();
+  const { register } = useAuth(); // Ambil fungsi register dari useAuth hook
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    setError(""); // Bersihkan error sebelumnya
 
     if (password !== confirmPassword) {
-      alert("Password dan konfirmasi password tidak cocok!");
+      setError("Password dan konfirmasi password tidak cocok!");
       return;
     }
 
-    console.log("Pendaftaran:", { nama, nim, prodi, email, password });
-    // TODO: handle real register logic here
+    setLoading(true); // Mulai loading
+
+    try {
+      // Panggil fungsi register dari useAuth hook
+      const data = await register(nama, email, password, prodi, nim);
+
+      if (data) {
+        // Jika ada respons dari API
+        alert(data.message || "Registrasi berhasil!");
+        navigate("/login"); // Arahkan ke halaman login setelah berhasil
+      }
+    } catch (err) {
+      // Kesalahan akan ditangkap dari apiRequest di dalam useAuth hook
+      setError(err.message || "Terjadi kesalahan saat registrasi.");
+      console.error("Error pendaftaran:", err);
+    } finally {
+      setLoading(false); // Selesai loading
+    }
   };
 
   return (
     <div className="flex my-6 justify-center items-center min-h-full">
       <div className="w-full max-w-xl bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-2xl  font-bold text-center text-[#626F47] mb-6">
+        <h2 className="text-2xl font-bold text-center text-[#626F47] mb-6">
           Daftar EduTrack
         </h2>
 
@@ -60,7 +81,7 @@ const Register = () => {
               type="text"
               value={nim}
               onChange={(e) => setNim(e.target.value)}
-              required
+              required // Anda bisa membuat ini opsional jika ada role selain mahasiswa
               className="mt-1 w-full min-w-lg px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A4B465]"
               placeholder="123456789"
             />
@@ -78,7 +99,7 @@ const Register = () => {
               type="text"
               value={prodi}
               onChange={(e) => setProdi(e.target.value)}
-              required
+              required // Anda bisa membuat ini opsional
               className="mt-1 w-full min-w-lg px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A4B465]"
               placeholder="Teknik Informatika"
             />
@@ -138,11 +159,14 @@ const Register = () => {
             />
           </div>
 
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
           <button
             type="submit"
             className="w-full bg-[#626F47] text-[#FEFAE0] hover:bg-[#4E5839] font-semibold py-2 rounded-md transition"
+            disabled={loading} // Nonaktifkan tombol saat loading
           >
-            Daftar
+            {loading ? "Mendaftar..." : "Daftar"}
           </button>
         </form>
 
